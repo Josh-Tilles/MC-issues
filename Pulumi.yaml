@@ -1,0 +1,3 @@
+name: MC-issues
+runtime: nodejs
+description: Demonstration of AKS managed cluster issues
