@@ -2,28 +2,21 @@ import * as pulumi from '@pulumi/pulumi';
 import * as azure from '@pulumi/azure';
 import * as azng from '@pulumi/azure-nextgen';
 import * as containerService from '@pulumi/azure-nextgen/containerservice/v20200901';
-import * as operationalInsights from '@pulumi/azure-nextgen/operationalinsights/v20200801';
 import { ResourceGroup, getResourceGroup } from '@pulumi/azure-nextgen/resources/v20200601';
 import { RandomUuid } from '@pulumi/random';
 
-const location = 'westus';
+const location = 'eastus2';
 
-// Create an Azure Resource Group
 const resourceGroup = new ResourceGroup('resourceGroup', {
     resourceGroupName: 'josh-repro',
     location,
-});
-const logAnalyticsWorkspace = new operationalInsights.Workspace('logs', {
-    location,
-    resourceGroupName: resourceGroup.name,
-    workspaceName: pulumi.interpolate`${resourceGroup.name}-log-analytics`
 });
 
 const cluster = new containerService.ManagedCluster('AKS', {
     location,
     resourceGroupName: resourceGroup.name,
-    resourceName: 'aks-k8s-cluster',
-    dnsPrefix: pulumi.interpolate`${resourceGroup.name}-k8s`,
+    resourceName: 'aks-cluster',
+    dnsPrefix: pulumi.interpolate`${resourceGroup.name}-aks-cluster`,
     identity: {
         type: 'SystemAssigned'
     },
@@ -35,19 +28,7 @@ const cluster = new containerService.ManagedCluster('AKS', {
     }],
     networkProfile: {
         networkPlugin: 'azure'
-    },
-    addonProfiles: {
-        KubeDashboard: {
-            enabled: true
-        },
-        OmsAgent: {
-            enabled: true,
-            config: {
-                logAnalyticsWorkspaceResourceId: logAnalyticsWorkspace.id
-            }
-        }
-    },
-    enableRBAC: true
+    }
 });
 
 
